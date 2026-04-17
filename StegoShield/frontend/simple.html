@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StegoShield - 图片隐写</title>
+  <link rel="stylesheet" href="./css/simple.css">
+  <style>
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+    .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; background: var(--bg); color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+    .tab-btn.active { background: var(--primary); color: white; }
+    .embed-section { display: block !important; }
+    .embed-section.hidden { display: none !important; }
+    .extract-section { display: none; }
+    .extract-section:not(.hidden) { display: block; }
+    .extract-result { margin-top: 20px; padding: 16px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); }
+    .extract-result-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .extract-result-content { font-size: 14px; word-break: break-all; max-height: 150px; overflow-y: auto; }
+    .extract-file-result { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; margin-top: 12px; }
+    .extract-file-icon { width: 40px; height: 40px; color: var(--success); }
+    .extract-file-info { flex: 1; }
+    .extract-file-name { font-weight: 600; font-size: 14px; }
+    .extract-file-size { font-size: 12px; color: var(--text-muted); }
+
+    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; }
+    .status-badge.loading { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+    .status-badge.success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+    .status-badge.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+    .error-detail { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; margin-top: 12px; }
+    .error-code { font-family: monospace; font-size: 12px; color: #ef4444; margin-bottom: 4px; }
+    .error-message { font-size: 14px; color: var(--text); }
+
+    .extract-preview { margin-top: 20px; padding: 16px; background: var(--bg); border-radius: 8px; border: 1px solid var(--border); }
+    .extract-preview img { max-width: 100%; max-height: 300px; border-radius: 8px; margin-top: 8px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <h1>StegoShield</h1>
+      <p>图片隐写工具</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-embed">嵌入数据</button>
+      <button class="tab-btn" id="tab-extract">提取数据</button>
+    </div>
+
+    <div class="card">
+      <div class="embed-section" id="embed-section">
+        <div class="step-container" id="embed-step-1">
+          <div class="upload-area" id="upload-area">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+              <path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p class="upload-text">点击选择图片</p>
+            <p class="upload-hint">支持 PNG、JPG、BMP</p>
+          </div>
+
+          <div style="margin-top: 16px; text-align: center;">
+            <span style="color: var(--text-muted); font-size: 14px;">隐写方法：</span>
+            <select id="method-select" style="margin-left: 8px; padding: 8px 12px; background: var(--bg-card); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+              <option value="lsb">LSB (PNG 推荐)</option>
+              <option value="dct">DCT (JPEG 支持)</option>
+            </select>
+          </div>
+
+          <input type="file" id="file-input" accept="image/*" style="display: none;">
+
+          <div class="preview-container" id="preview-container">
+            <img id="preview-img" class="preview-img" alt="预览">
+            <p class="preview-info" id="preview-info"></p>
+          </div>
+
+          <button class="btn btn-primary" id="next-1-btn" style="margin-top: 20px;" disabled>下一步</button>
+        </div>
+
+        <div class="step-container hidden" id="embed-step-2">
+          <div class="input-type-selector">
+            <button class="type-btn active" data-type="text">文字</button>
+            <button class="type-btn" data-type="file">文件</button>
+          </div>
+
+          <div id="text-input-section">
+            <textarea class="text-area" id="secret-text" placeholder="输入要隐藏的内容..."></textarea>
+          </div>
+
+          <div id="file-input-section" class="hidden">
+            <div class="upload-area" id="file-upload-area">
+              <svg class="upload-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/>
+                <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              <p class="upload-text">点击选择文件</p>
+              <p class="upload-hint" id="file-name-hint"></p>
+            </div>
+            <input type="file" id="secret-file-input" style="display: none;">
+          </div>
+
+          <button class="btn btn-primary" id="next-2-btn" style="margin-top: 20px;">下一步</button>
+          <button class="btn" id="back-2-btn" style="margin-top: 10px; background: transparent; color: var(--text-muted);">返回</button>
+        </div>
+
+        <div class="step-container hidden" id="embed-step-3">
+          <div class="confirm-section">
+            <svg class="confirm-icon" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h2 class="confirm-title">确认执行</h2>
+            <p class="confirm-desc">准备将内容嵌入图片</p>
+
+            <div class="options-row">
+              <div class="option-item">
+                <div class="option-label">载体</div>
+                <div class="option-value" id="confirm-image">-</div>
+              </div>
+              <div class="option-item">
+                <div class="option-label">内容</div>
+                <div class="option-value" id="confirm-content">-</div>
+              </div>
+              <div class="option-item">
+                <div class="option-label">方法</div>
+                <div class="option-value">LSB</div>
+              </div>
+              <div class="option-item">
+                <div class="option-label">加密</div>
+                <div class="option-value" id="confirm-encrypt">否</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px;">
+              <span style="color: var(--text-muted);">启用加密</span>
+              <label class="toggle">
+                <input type="checkbox" id="encrypt-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px;">
+              <span style="color: var(--text-muted);">抗压缩</span>
+              <label class="toggle">
+                <input type="checkbox" id="compress-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <button class="btn btn-primary" id="execute-btn">开始嵌入</button>
+            <button class="btn" id="back-3-btn" style="margin-top: 10px; background: transparent; color: var(--text-muted);">返回</button>
+          </div>
+        </div>
+
+        <div class="step-container hidden" id="embed-step-4">
+          <div class="processing-section">
+            <div class="processing-icon">
+              <div class="processing-circle"></div>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v9m0 0a9 9 0 1 1-6.364-2.636" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="60" stroke-dashoffset="20"/>
+              </svg>
+            </div>
+            <h2 class="processing-title">正在处理</h2>
+            <p class="processing-desc">正在将秘密信息嵌入图片...</p>
+            <div id="embed-status" class="status-badge loading" style="margin-top: 16px;">
+              <span>准备中...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-container hidden" id="embed-step-5">
+          <div class="result-section">
+            <svg class="result-icon" id="embed-result-icon" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2 class="result-title" id="result-title">嵌入成功!</h2>
+            <p class="result-desc" id="result-desc">图片已生成</p>
+
+            <div id="embed-error-section" class="error-detail hidden">
+              <div class="error-code" id="embed-error-code"></div>
+              <div class="error-message" id="embed-error-message"></div>
+            </div>
+
+            <div class="result-preview" id="result-preview">
+              <img id="result-preview-img" alt="结果预览">
+            </div>
+
+            <div class="key-section hidden" id="key-section">
+              <div class="key-label">加密密钥</div>
+              <div class="key-value-row">
+                <div class="key-value" id="result-key">-</div>
+                <button class="btn-copy" id="copy-key-btn">复制</button>
+              </div>
+              <p class="key-hint">请务必保存密钥，否则无法提取内容!</p>
+            </div>
+
+            <div class="result-actions" id="result-actions">
+              <button class="btn btn-download" id="download-btn">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                下载图片
+              </button>
+              <button class="btn btn-reset" id="reset-btn">重新开始</button>
+              <button class="btn btn-retry hidden" id="retry-btn" style="background: var(--warning); color: white;">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
+                  <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                重试
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="extract-section hidden" id="extract-section">
+        <div class="step-container" id="extract-step-1">
+          <div class="upload-area" id="extract-upload-area">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+              <path d="M21 15l-5-5L5 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p class="upload-text">点击选择包含秘密的图片</p>
+            <p class="upload-hint">支持 PNG、JPG、BMP</p>
+          </div>
+          <input type="file" id="extract-file-input" accept="image/*" style="display: none;">
+
+          <div class="preview-container" id="extract-preview-container">
+            <img id="extract-preview-img" class="preview-img" alt="预览">
+            <p class="preview-info" id="extract-preview-info"></p>
+          </div>
+
+          <div style="margin: 20px 0; padding: 16px; background: var(--bg); border-radius: 8px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+              <span style="color: var(--text-muted);">密钥解密</span>
+              <label class="toggle">
+                <input type="checkbox" id="decrypt-toggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <input type="text" id="decrypt-key" placeholder="输入密钥（如需要）"
+                   style="width: 100%; margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 14px; display: none;">
+          </div>
+
+          <button class="btn btn-primary" id="extract-btn" disabled>开始提取</button>
+        </div>
+
+        <div class="step-container hidden" id="extract-step-2">
+          <div class="processing-section">
+            <div class="processing-icon">
+              <div class="processing-circle"></div>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v9m0 0a9 9 0 1 1-6.364-2.636" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="60" stroke-dashoffset="20"/>
+              </svg>
+            </div>
+            <h2 class="processing-title">正在提取</h2>
+            <p class="processing-desc">正在从图片中提取秘密信息...</p>
+            <div id="extract-status" class="status-badge loading" style="margin-top: 16px;">
+              <span>准备中...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-container hidden" id="extract-step-3">
+          <div class="result-section">
+            <svg class="result-icon" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2 class="result-title" id="extract-result-title">提取完成!</h2>
+            <p class="result-desc" id="extract-result-desc">数据已提取</p>
+
+            <div id="extract-error-section" class="error-detail hidden">
+              <div class="error-code" id="extract-error-code"></div>
+              <div class="error-message" id="extract-error-message"></div>
+            </div>
+
+            <div class="extract-preview hidden" id="image-preview-section">
+              <div class="extract-result-label">提取的图片</div>
+              <img id="extracted-image-preview" alt="提取的图片预览" style="max-width: 100%; border-radius: 8px; margin-top: 8px;">
+              <button class="btn" id="download-extracted-image-btn" style="margin-top: 12px; background: var(--success); color: white;">下载图片</button>
+            </div>
+
+            <div class="extract-result" id="text-result-section">
+              <div class="extract-result-label">提取的文本内容</div>
+              <div class="extract-result-content" id="extracted-text"></div>
+              <button class="btn" id="copy-text-btn" style="margin-top: 12px; background: var(--primary); color: white;">复制文本</button>
+            </div>
+
+            <div class="extract-result hidden" id="file-result-section">
+              <div class="extract-result-label">提取的文件</div>
+              <div class="extract-file-result">
+                <svg class="extract-file-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/>
+                  <polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <div class="extract-file-info">
+                  <div class="extract-file-name" id="extracted-filename">-</div>
+                  <div class="extract-file-size" id="extracted-filesize">-</div>
+                </div>
+                <button class="btn" id="download-file-btn" style="background: var(--success); color: white;">下载</button>
+              </div>
+            </div>
+
+            <button class="btn btn-reset" id="extract-reset-btn" style="margin-top: 20px;">继续提取</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://127.0.0.1:5001/api';
+
+    // 复制到剪贴板（兼容非 HTTPS）
+    function copyToClipboard(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+      } catch (e) {
+        navigator.clipboard.writeText(text);
+      }
+      document.body.removeChild(textarea);
+    }
+
+    const embedState = {
+      currentStep: 1,
+      image: null,
+      imageName: '',
+      method: 'lsb',
+      inputType: 'text',
+      secretText: '',
+      secretFile: null,
+      secretFileName: '',
+      useEncrypt: false,
+      useCompress: false,
+      resultImage: '',
+      resultKey: ''
+    };
+
+    const extractState = {
+      currentStep: 1,
+      image: null,
+      imageName: '',
+      useDecrypt: false,
+      decryptKey: '',
+      isFile: false,
+      isImage: false,
+      extractedData: '',
+      extractedFilename: '',
+      extractedImageData: ''
+    };
+
+    const elements = {
+      tabEmbed: document.getElementById('tab-embed'),
+      tabExtract: document.getElementById('tab-extract'),
+      embedSection: document.getElementById('embed-section'),
+      extractSection: document.getElementById('extract-section'),
+
+      uploadArea: document.getElementById('upload-area'),
+      fileInput: document.getElementById('file-input'),
+      previewContainer: document.getElementById('preview-container'),
+      previewImg: document.getElementById('preview-img'),
+      previewInfo: document.getElementById('preview-info'),
+      methodSelect: document.getElementById('method-select'),
+      next1Btn: document.getElementById('next-1-btn'),
+      typeBtns: document.querySelectorAll('.type-btn'),
+      secretText: document.getElementById('secret-text'),
+      textSection: document.getElementById('text-input-section'),
+      fileSection: document.getElementById('file-input-section'),
+      fileUploadArea: document.getElementById('file-upload-area'),
+      secretFileInput: document.getElementById('secret-file-input'),
+      fileNameHint: document.getElementById('file-name-hint'),
+      next2Btn: document.getElementById('next-2-btn'),
+      back2Btn: document.getElementById('back-2-btn'),
+      back3Btn: document.getElementById('back-3-btn'),
+      confirmImage: document.getElementById('confirm-image'),
+      confirmContent: document.getElementById('confirm-content'),
+      confirmEncrypt: document.getElementById('confirm-encrypt'),
+      encryptToggle: document.getElementById('encrypt-toggle'),
+      executeBtn: document.getElementById('execute-btn'),
+      downloadBtn: document.getElementById('download-btn'),
+      resetBtn: document.getElementById('reset-btn'),
+      retryBtn: document.getElementById('retry-btn'),
+      copyKeyBtn: document.getElementById('copy-key-btn'),
+      compressToggle: document.getElementById('compress-toggle'),
+
+      extractUploadArea: document.getElementById('extract-upload-area'),
+      extractFileInput: document.getElementById('extract-file-input'),
+      extractPreviewContainer: document.getElementById('extract-preview-container'),
+      extractPreviewImg: document.getElementById('extract-preview-img'),
+      extractPreviewInfo: document.getElementById('extract-preview-info'),
+      decryptToggle: document.getElementById('decrypt-toggle'),
+      decryptKeyInput: document.getElementById('decrypt-key'),
+      extractBtn: document.getElementById('extract-btn'),
+      imagePreviewSection: document.getElementById('image-preview-section'),
+      extractedImagePreview: document.getElementById('extracted-image-preview'),
+      downloadExtractedImageBtn: document.getElementById('download-extracted-image-btn'),
+      extractedText: document.getElementById('extracted-text'),
+      textResultSection: document.getElementById('text-result-section'),
+      fileResultSection: document.getElementById('file-result-section'),
+      extractedFilename: document.getElementById('extracted-filename'),
+      extractedFilesize: document.getElementById('extracted-filesize'),
+      copyTextBtn: document.getElementById('copy-text-btn'),
+      downloadFileBtn: document.getElementById('download-file-btn'),
+      extractResetBtn: document.getElementById('extract-reset-btn')
+    };
+
+    elements.tabEmbed.addEventListener('click', () => {
+      elements.tabEmbed.classList.add('active');
+      elements.tabExtract.classList.remove('active');
+      elements.embedSection.classList.remove('hidden');
+      elements.extractSection.classList.add('hidden');
+    });
+
+    elements.tabExtract.addEventListener('click', () => {
+      elements.tabExtract.classList.add('active');
+      elements.tabEmbed.classList.remove('active');
+      elements.extractSection.classList.remove('hidden');
+      elements.embedSection.classList.add('hidden');
+    });
+
+    function embedGoToStep(step) {
+      const fromStep = embedState.currentStep;
+      const fromEl = document.getElementById(`embed-step-${fromStep}`);
+      fromEl.classList.add('fade-out');
+
+      setTimeout(() => {
+        fromEl.classList.add('hidden');
+        fromEl.classList.remove('fade-out');
+        embedState.currentStep = step;
+        const toEl = document.getElementById(`embed-step-${step}`);
+        toEl.classList.remove('hidden');
+      }, 300);
+    }
+
+    elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
+    elements.fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        embedState.image = event.target.result;
+        embedState.imageName = file.name;
+
+        elements.previewImg.src = embedState.image;
+        elements.previewInfo.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        elements.previewContainer.classList.add('show');
+        elements.uploadArea.style.display = 'none';
+        elements.next1Btn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    elements.next1Btn.addEventListener('click', () => {
+      embedState.method = elements.methodSelect.value;
+      embedGoToStep(2);
+    });
+
+    elements.typeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        elements.typeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        embedState.inputType = btn.dataset.type;
+
+        if (embedState.inputType === 'text') {
+          elements.textSection.classList.remove('hidden');
+          elements.fileSection.classList.add('hidden');
+        } else {
+          elements.textSection.classList.add('hidden');
+          elements.fileSection.classList.remove('hidden');
+        }
+      });
+    });
+
+    elements.fileUploadArea.addEventListener('click', () => elements.secretFileInput.click());
+    elements.secretFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      embedState.secretFile = file;
+      embedState.secretFileName = file.name;
+      elements.fileNameHint.textContent = file.name;
+    });
+
+    elements.encryptToggle.addEventListener('change', (e) => {
+      embedState.useEncrypt = e.target.checked;
+      elements.confirmEncrypt.textContent = embedState.useEncrypt ? '是' : '否';
+    });
+
+    elements.compressToggle.addEventListener('change', (e) => {
+      embedState.useCompress = e.target.checked;
+    });
+
+    elements.next2Btn.addEventListener('click', () => {
+      if (embedState.inputType === 'text') {
+        embedState.secretText = elements.secretText.value;
+        if (!embedState.secretText.trim()) {
+          alert('请输入要隐藏的内容');
+          return;
+        }
+      } else {
+        if (!embedState.secretFile) {
+          alert('请选择要嵌入的文件');
+          return;
+        }
+      }
+
+      elements.confirmImage.textContent = embedState.imageName;
+      elements.confirmContent.textContent = embedState.inputType === 'text'
+        ? (embedState.secretText.length > 15 ? embedState.secretText.slice(0, 15) + '...' : embedState.secretText)
+        : embedState.secretFileName;
+
+      embedGoToStep(3);
+    });
+
+    elements.back2Btn.addEventListener('click', () => embedGoToStep(1));
+    elements.back3Btn.addEventListener('click', () => embedGoToStep(2));
+
+    function updateEmbedStatus(message, type = 'loading') {
+      const statusEl = document.getElementById('embed-status');
+      statusEl.className = `status-badge ${type}`;
+      statusEl.innerHTML = `<span>${message}</span>`;
+    }
+
+    elements.executeBtn.addEventListener('click', async () => {
+      embedGoToStep(4);
+      updateEmbedStatus('正在处理...');
+
+      try {
+        const payload = {
+          image: embedState.image,
+          type: embedState.inputType,
+          content: {},
+          encryption: {
+            enabled: embedState.useEncrypt
+          },
+          method: embedState.method,
+          compressResistant: embedState.useCompress
+        };
+
+        if (embedState.inputType === 'text') {
+          payload.content.text = embedState.secretText;
+        } else {
+          const reader = new FileReader();
+          const fileData = await new Promise((resolve) => {
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(embedState.secretFile);
+          });
+
+          payload.content.fileName = embedState.secretFileName;
+          payload.content.fileData = fileData.split(',')[1];
+        }
+
+        updateEmbedStatus('发送请求...');
+
+        const response = await fetch(`${API_BASE}/embed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          updateEmbedStatus('嵌入完成!', 'success');
+
+          embedState.resultImage = result.data.image;
+          embedState.resultKey = result.data.encryption?.key || '';
+
+          let imgData = result.data.image;
+          if (!imgData.startsWith('data:')) {
+            imgData = 'data:image/png;base64,' + imgData;
+          }
+
+          document.getElementById('result-preview-img').src = imgData;
+          document.getElementById('result-preview').classList.remove('hidden');
+          document.getElementById('embed-error-section').classList.add('hidden');
+          document.getElementById('reset-btn').classList.remove('hidden');
+          document.getElementById('retry-btn').classList.add('hidden');
+
+          // 成功图标
+          const resultIcon = document.getElementById('embed-result-icon');
+          resultIcon.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+          resultIcon.style.color = 'var(--success)';
+
+          const keySection = document.getElementById('key-section');
+          if (result.data.encryption?.enabled && result.data.encryption?.key) {
+            keySection.classList.remove('hidden');
+            document.getElementById('result-key').textContent = result.data.encryption.key;
+            document.getElementById('result-desc').textContent = '嵌入成功，请保存密钥';
+            document.getElementById('result-title').textContent = '嵌入成功!';
+          } else {
+            keySection.classList.add('hidden');
+            document.getElementById('result-desc').textContent = '图片已生成';
+            document.getElementById('result-title').textContent = '嵌入成功!';
+          }
+
+          setTimeout(() => embedGoToStep(5), 500);
+        } else {
+          const errorCode = result.error?.code || 'UNKNOWN';
+          const errorMessage = result.error?.message || '未知错误';
+
+          document.getElementById('embed-error-code').textContent = `错误码: ${errorCode}`;
+          document.getElementById('embed-error-message').textContent = errorMessage;
+          document.getElementById('embed-error-section').classList.remove('hidden');
+          document.getElementById('result-preview').classList.add('hidden');
+          document.getElementById('result-title').textContent = '嵌入失败';
+          document.getElementById('result-desc').textContent = '请检查错误信息后重试';
+
+          // 失败图标
+          const resultIcon = document.getElementById('embed-result-icon');
+          resultIcon.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+          resultIcon.style.color = 'var(--error)';
+
+          document.getElementById('result-key').parentElement.parentElement.classList.add('hidden');
+          document.querySelector('.btn-download').classList.add('hidden');
+          document.getElementById('reset-btn').classList.add('hidden');
+          document.getElementById('retry-btn').classList.remove('hidden');
+
+          updateEmbedStatus(`失败: ${errorMessage}`, 'error');
+          setTimeout(() => embedGoToStep(5), 500);
+        }
+      } catch (err) {
+        document.getElementById('embed-error-code').textContent = '错误码: NETWORK_ERROR';
+        document.getElementById('embed-error-message').textContent = `网络请求失败: ${err.message}`;
+        document.getElementById('embed-error-section').classList.remove('hidden');
+        document.getElementById('result-preview').classList.add('hidden');
+        document.getElementById('result-title').textContent = '嵌入失败';
+        document.getElementById('result-desc').textContent = '请检查错误信息后重试';
+
+        // 失败图标
+        const resultIconNet = document.getElementById('embed-result-icon');
+        resultIconNet.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+        resultIconNet.style.color = 'var(--error)';
+
+        document.getElementById('result-key').parentElement.parentElement.classList.add('hidden');
+        document.querySelector('.btn-download').classList.add('hidden');
+        document.getElementById('reset-btn').classList.add('hidden');
+        document.getElementById('retry-btn').classList.remove('hidden');
+
+        updateEmbedStatus(`失败: ${err.message}`, 'error');
+        setTimeout(() => embedGoToStep(5), 500);
+      }
+    });
+
+    elements.downloadBtn.addEventListener('click', () => {
+      if (!embedState.resultImage) {
+        alert('没有可下载的图片');
+        return;
+      }
+
+      let base64Data = embedState.resultImage;
+      let mimeType = 'image/png';
+
+      if (embedState.resultImage.includes(',')) {
+        const parts = embedState.resultImage.split(',');
+        base64Data = parts[1];
+        if (parts[0].includes('jpeg') || parts[0].includes('jpg')) {
+          mimeType = 'image/jpeg';
+        }
+      }
+
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      const blob = new Blob([bytes], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = mimeType.includes('jpeg') ? 'stego_result.jpg' : 'stego_result.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    });
+
+    elements.copyKeyBtn.addEventListener('click', () => {
+      if (embedState.resultKey) {
+        copyToClipboard(embedState.resultKey);
+        elements.copyKeyBtn.textContent = '已复制!';
+        setTimeout(() => elements.copyKeyBtn.textContent = '复制', 2000);
+      }
+    });
+
+    elements.resetBtn.addEventListener('click', () => {
+      embedState.method = 'lsb';
+      location.reload();
+    });
+
+    elements.retryBtn.addEventListener('click', () => {
+      document.getElementById('embed-error-section').classList.add('hidden');
+      document.getElementById('embed-error-code').textContent = '';
+      document.getElementById('embed-error-message').textContent = '';
+      document.getElementById('result-preview').classList.remove('hidden');
+      document.getElementById('result-key').parentElement.parentElement.classList.remove('hidden');
+      document.querySelector('.btn-download').classList.remove('hidden');
+      document.getElementById('reset-btn').classList.remove('hidden');
+      document.getElementById('retry-btn').classList.add('hidden');
+      embedGoToStep(1);
+    });
+
+    function extractGoToStep(step) {
+      const fromStep = extractState.currentStep;
+      const fromEl = document.getElementById(`extract-step-${fromStep}`);
+      fromEl.classList.add('fade-out');
+
+      setTimeout(() => {
+        fromEl.classList.add('hidden');
+        fromEl.classList.remove('fade-out');
+        extractState.currentStep = step;
+        const toEl = document.getElementById(`extract-step-${step}`);
+        toEl.classList.remove('hidden');
+      }, 300);
+    }
+
+    function updateExtractStatus(message, type = 'loading') {
+      const statusEl = document.getElementById('extract-status');
+      statusEl.className = `status-badge ${type}`;
+      statusEl.innerHTML = `<span>${message}</span>`;
+    }
+
+    elements.extractUploadArea.addEventListener('click', () => elements.extractFileInput.click());
+    elements.extractFileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        extractState.image = event.target.result;
+        extractState.imageName = file.name;
+
+        elements.extractPreviewImg.src = extractState.image;
+        elements.extractPreviewInfo.textContent = file.name;
+        elements.extractPreviewContainer.classList.add('show');
+        elements.extractUploadArea.style.display = 'none';
+        elements.extractBtn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    elements.decryptToggle.addEventListener('change', (e) => {
+      extractState.useDecrypt = e.target.checked;
+      elements.decryptKeyInput.style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    elements.decryptKeyInput.addEventListener('input', (e) => {
+      extractState.decryptKey = e.target.value;
+    });
+
+    elements.extractBtn.addEventListener('click', async () => {
+      extractGoToStep(2);
+      updateExtractStatus('正在提取...');
+
+      try {
+        const payload = {
+          image: extractState.image,
+          decryption: {
+            enabled: extractState.useDecrypt
+          }
+        };
+
+        if (extractState.useDecrypt && extractState.decryptKey) {
+          payload.decryption.key = extractState.decryptKey;
+        }
+
+        updateExtractStatus('发送请求...');
+
+        const response = await fetch(`${API_BASE}/extract`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          updateExtractStatus('提取完成!', 'success');
+
+          document.getElementById('extract-error-section').classList.add('hidden');
+          document.getElementById('extract-result-title').textContent = '提取完成!';
+
+          const data = result.data;
+
+          extractState.isFile = false;
+          extractState.isImage = false;
+          elements.textResultSection.classList.add('hidden');
+          elements.fileResultSection.classList.add('hidden');
+          elements.imagePreviewSection.classList.add('hidden');
+
+          if (data.type === 'file') {
+            extractState.isFile = true;
+            elements.fileResultSection.classList.remove('hidden');
+            elements.extractedFilename.textContent = data.fileName || '未知文件';
+            elements.extractedFilesize.textContent = data.fileData ? `${Math.round(data.fileData.length * 3 / 4)} bytes` : '-';
+            extractState.extractedData = data.fileData;
+            extractState.extractedFilename = data.fileName;
+            document.getElementById('extract-result-desc').textContent = `提取到文件: ${data.fileName}`;
+
+            const fileName = data.fileName || '';
+            if (/\.(png|jpg|jpeg|gif|bmp|webp)$/i.test(fileName)) {
+              extractState.isImage = true;
+              extractState.extractedImageData = data.fileData;
+              const imgPreview = 'data:image/png;base64,' + data.fileData;
+              elements.extractedImagePreview.src = imgPreview;
+              elements.imagePreviewSection.classList.remove('hidden');
+              document.getElementById('extract-result-desc').textContent = `提取到图片: ${data.fileName}`;
+            }
+          } else {
+            elements.textResultSection.classList.remove('hidden');
+            elements.extractedText.textContent = data.text || '(无内容)';
+            extractState.extractedData = data.text;
+            document.getElementById('extract-result-desc').textContent = '提取到文本';
+          }
+
+          setTimeout(() => extractGoToStep(3), 500);
+        } else {
+          const errorCode = result.error?.code || 'UNKNOWN';
+          const errorMessage = result.error?.message || '未知错误';
+
+          document.getElementById('extract-error-code').textContent = `错误码: ${errorCode}`;
+          document.getElementById('extract-error-message').textContent = errorMessage;
+          document.getElementById('extract-error-section').classList.remove('hidden');
+          document.getElementById('extract-result-title').textContent = '提取失败';
+          document.getElementById('extract-result-desc').textContent = '请检查错误信息后重试';
+
+          updateExtractStatus(`失败: ${errorMessage}`, 'error');
+          setTimeout(() => extractGoToStep(3), 500);
+        }
+      } catch (err) {
+        document.getElementById('extract-error-code').textContent = '错误码: NETWORK_ERROR';
+        document.getElementById('extract-error-message').textContent = `网络请求失败: ${err.message}`;
+        document.getElementById('extract-error-section').classList.remove('hidden');
+        document.getElementById('extract-result-title').textContent = '提取失败';
+        updateExtractStatus(`失败: ${err.message}`, 'error');
+        setTimeout(() => extractGoToStep(3), 500);
+      }
+    });
+
+    elements.copyTextBtn.addEventListener('click', () => {
+      if (extractState.extractedData) {
+        copyToClipboard(extractState.extractedData);
+        elements.copyTextBtn.textContent = '已复制!';
+        setTimeout(() => elements.copyTextBtn.textContent = '复制文本', 2000);
+      }
+    });
+
+    elements.downloadFileBtn.addEventListener('click', () => {
+      if (!extractState.extractedData || !extractState.isFile) return;
+
+      try {
+        const binaryString = atob(extractState.extractedData);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        const blob = new Blob([bytes]);
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = extractState.extractedFilename || 'extracted_file';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('下载失败: ' + err.message);
+      }
+    });
+
+    elements.downloadExtractedImageBtn.addEventListener('click', () => {
+      if (!extractState.extractedImageData) return;
+
+      try {
+        const binaryString = atob(extractState.extractedImageData);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        const mimeType = 'image/png';
+        const blob = new Blob([bytes], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = extractState.extractedFilename || 'extracted_image.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        alert('下载失败: ' + err.message);
+      }
+    });
+
+    elements.extractResetBtn.addEventListener('click', () => {
+      extractState.currentStep = 1;
+      extractState.image = null;
+      extractState.imageName = '';
+      extractState.useDecrypt = false;
+      extractState.decryptKey = '';
+      extractState.isFile = false;
+      extractState.isImage = false;
+      extractState.extractedData = '';
+      extractState.extractedFilename = '';
+      extractState.extractedImageData = '';
+
+      elements.extractFileInput.value = '';
+      elements.extractPreviewContainer.classList.add('hidden');
+      elements.extractUploadArea.style.display = 'flex';
+      elements.imagePreviewSection.classList.add('hidden');
+      elements.textResultSection.classList.add('hidden');
+      elements.fileResultSection.classList.add('hidden');
+      elements.extractBtn.disabled = true;
+      elements.decryptToggle.checked = false;
+      elements.decryptKeyInput.style.display = 'none';
+      elements.decryptKeyInput.value = '';
+      elements.textResultSection.classList.add('hidden');
+      elements.fileResultSection.classList.add('hidden');
+      document.getElementById('extract-error-section').classList.add('hidden');
+
+      document.getElementById('extract-step-1').classList.remove('hidden');
+      document.getElementById('extract-step-2').classList.add('hidden');
+      document.getElementById('extract-step-3').classList.add('hidden');
+    });
+  </script>
+</body>
+</html>

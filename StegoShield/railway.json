@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfile": "Dockerfile.web"
+  },
+  "deploy": {
+    "numInstances": 1
+  }
+}
