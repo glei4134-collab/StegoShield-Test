@@ -1,0 +1,345 @@
+<UserControl x:Class="StegoShield.Desktop.Views.VipPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="32">
+            <TextBlock Text="👑 VIP管理中心" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       Foreground="#1A1A2E"
+                       Margin="0,0,0,24"/>
+
+            <Border CornerRadius="12" Padding="24" Margin="0,0,0,24">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Color="#667EEA" Offset="0"/>
+                        <GradientStop Color="#764BA2" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock x:Name="txtVipStatus" Text="当前状态: 标准版" 
+                                   FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+                        <TextBlock x:Name="txtVipExpiry" Text="输入激活码解锁VIP特权" 
+                                   FontSize="13" Foreground="White" Margin="0,0,0,16"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBox x:Name="txtActivationCode"
+                                 Grid.Column="0"
+                                 Padding="12,10"
+                                 FontSize="14"
+                                 Background="White"
+                                 Foreground="#1A1A2E"
+                                 BorderThickness="0"
+                                 Margin="0,0,8,0"/>
+                        
+                        <Button x:Name="btnActivate" 
+                                Grid.Column="1"
+                                Content="激活VIP"
+                                Padding="20,10"
+                                FontSize="13"
+                                FontWeight="SemiBold"
+                                Background="#34C759"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Click="BtnActivate_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Grid.Row="2"
+                               Text="💡 输入激活码联网验证，激活后可离线使用VIP功能"
+                               FontSize="11"
+                               Foreground="#E0E0E0"
+                               TextWrapping="Wrap"/>
+                </Grid>
+            </Border>
+
+            <TextBlock Text="VIP特权" FontSize="18" FontWeight="SemiBold" 
+                       Foreground="#1A1A2E" Margin="0,0,0,16"/>
+
+            <WrapPanel>
+                <Border Background="White" CornerRadius="8" Padding="20" Width="230" Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="✓" FontSize="24" Foreground="#34C759" Margin="0,0,0,8"/>
+                        <TextBlock Text="高级隐写算法" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#1A1A2E" Margin="0,0,0,4"/>
+                        <TextBlock Text="F5、JSteg、OutGuess等高级算法" FontSize="11" 
+                                   Foreground="#6C757D" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" Padding="20" Width="230" Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="✓" FontSize="24" Foreground="#34C759" Margin="0,0,0,8"/>
+                        <TextBlock Text="批量处理" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#1A1A2E" Margin="0,0,0,4"/>
+                        <TextBlock Text="一次处理最多100张图片" FontSize="11" 
+                                   Foreground="#6C757D" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" Padding="20" Width="230" Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="✓" FontSize="24" Foreground="#34C759" Margin="0,0,0,8"/>
+                        <TextBlock Text="无损压缩" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#1A1A2E" Margin="0,0,0,4"/>
+                        <TextBlock Text="高级压缩算法，保留更多细节" FontSize="11" 
+                                   Foreground="#6C757D" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" Padding="20" Width="230" Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="✓" FontSize="24" Foreground="#34C759" Margin="0,0,0,8"/>
+                        <TextBlock Text="错误纠正码" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#1A1A2E" Margin="0,0,0,4"/>
+                        <TextBlock Text="Reed-Solomon纠错码技术" FontSize="11" 
+                                   Foreground="#6C757D" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" Padding="20" Width="230" Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="✓" FontSize="24" Foreground="#34C759" Margin="0,0,0,8"/>
+                        <TextBlock Text="VIP服务器模式" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#1A1A2E" Margin="0,0,0,4"/>
+                        <TextBlock Text="将自己变成API服务器供其他软件使用" FontSize="11" 
+                                   Foreground="#6C757D" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="White" CornerRadius="8" Padding="20" Width="230" Margin="0,0,16,16">
+                    <StackPanel>
+                        <TextBlock Text="✓" FontSize="24" Foreground="#34C759" Margin="0,0,0,8"/>
+                        <TextBlock Text="无限API调用" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#1A1A2E" Margin="0,0,0,4"/>
+                        <TextBlock Text="无限制使用API接口" FontSize="11" 
+                                   Foreground="#6C757D" TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <TextBlock Text="API服务器控制" FontSize="18" FontWeight="SemiBold" 
+                       Foreground="#1A1A2E" Margin="0,24,0,16" x:Name="serverTitle"/>
+
+            <Border x:Name="serverPanel" Background="White" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="启动API服务器，将StegoShield变成可供其他软件调用的REST API服务器" 
+                               FontSize="12" Foreground="#6C757D" Margin="0,0,0,16" TextWrapping="Wrap"/>
+
+                    <Border Background="#F8F9FA" CornerRadius="8" Padding="16" Margin="0,0,0,16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <TextBlock x:Name="txtServerStatus" Text="⚫ 已停止" 
+                                               FontSize="14" FontWeight="SemiBold" Foreground="#808080"/>
+                                </StackPanel>
+                                <TextBlock x:Name="txtServerUrl" Text="服务器未启动" 
+                                           FontSize="12" Foreground="#6C757D"/>
+                            </StackPanel>
+                            <Button x:Name="btnStartStop" 
+                                    Content="▶ 启动服务器"
+                                    Grid.Column="1"
+                                    Padding="20,10"
+                                    FontSize="13"
+                                    Background="#34C759"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"
+                                    Click="BtnStartStop_Click">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                                            </Trigger>
+                                            <Trigger Property="IsEnabled" Value="False">
+                                                <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <Expander Header="📡 API端点说明" IsExpanded="False" Margin="0,0,0,8">
+                        <Border Background="#F8F9FA" CornerRadius="8" Padding="16" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="健康检查" FontSize="13" FontWeight="SemiBold" Foreground="#1A1A2E" Margin="0,0,0,8"/>
+                                <TextBlock Text="GET /api/v1/health" FontSize="12" FontFamily="Consolas" Foreground="#667EEA" Margin="0,0,0,4"/>
+                                <TextBlock Text="返回服务器状态，无需认证" FontSize="11" Foreground="#6C757D" Margin="0,0,0,16"/>
+
+                                <TextBlock Text="图片隐写" FontSize="13" FontWeight="SemiBold" Foreground="#1A1A2E" Margin="0,0,0,8"/>
+                                <TextBlock Text="POST /api/v1/stego/encode" FontSize="12" FontFamily="Consolas" Foreground="#667EEA" Margin="0,0,0,4"/>
+                                <TextBlock FontSize="11" FontFamily="Consolas" Foreground="#6C757D" Margin="0,0,0,16">
+                                    <Run Text="{}{&quot;ImagePath&quot;: &quot;path&quot;, &quot;Text&quot;: &quot;data&quot;, &quot;Algorithm&quot;: &quot;LSB&quot;}"/>
+                                </TextBlock>
+
+                                <TextBlock Text="提取隐藏数据" FontSize="13" FontWeight="SemiBold" Foreground="#1A1A2E" Margin="0,0,0,8"/>
+                                <TextBlock Text="POST /api/v1/stego/decode" FontSize="12" FontFamily="Consolas" Foreground="#667EEA" Margin="0,0,0,4"/>
+                                <TextBlock FontSize="11" FontFamily="Consolas" Foreground="#6C757D" Margin="0,0,0,16">
+                                    <Run Text="{}{&quot;ImagePath&quot;: &quot;path&quot;, &quot;Algorithm&quot;: &quot;LSB&quot;}"/>
+                                </TextBlock>
+
+                                <TextBlock Text="所有API端点都需要在请求头中包含X-API-Key进行认证" 
+                                           FontSize="11" FontStyle="Italic" Foreground="#FF3B30" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="API密钥管理" FontSize="18" FontWeight="SemiBold" 
+                       Foreground="#1A1A2E" Margin="0,24,0,16"/>
+
+            <Border Background="White" CornerRadius="12" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="用于API服务器模式的身份验证" FontSize="12" 
+                               Foreground="#6C757D" Margin="0,0,0,16"/>
+
+                    <ListBox x:Name="apiKeysList" Background="Transparent" BorderThickness="0" 
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,16">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#F8F9FA" CornerRadius="8" Padding="16" Margin="0,0,0,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" 
+                                                       Foreground="#1A1A2E"/>
+                                            <TextBlock Text="{Binding Key, StringFormat='🔑 {0}'}" 
+                                                       FontSize="12" FontFamily="Consolas" Foreground="#667EEA" Margin="0,4,0,0"/>
+                                            <TextBlock FontSize="10" Foreground="#ADB5BD" Margin="0,4,0,0">
+                                                <Run Text="创建时间: "/><Run Text="{Binding CreatedAt, StringFormat='yyyy-MM-dd HH:mm'}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Content="复制"
+                                                    Padding="12,6"
+                                                    FontSize="11"
+                                                    Background="Transparent"
+                                                    Foreground="#667EEA"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Key}"
+                                                    Click="BtnCopyKey_Click"
+                                                    Margin="0,0,8,0">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="border" Property="Background" Value="#F0F0FF"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                            <Button Content="删除"
+                                                    Padding="12,6"
+                                                    FontSize="11"
+                                                    Background="Transparent"
+                                                    Foreground="#FF3B30"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand"
+                                                    Tag="{Binding Id}"
+                                                    Click="BtnDeleteKey_Click">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter TargetName="border" Property="Background" Value="#FFF0F0"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Button x:Name="btnCreateApiKey" 
+                            Content="+ 生成新密钥"
+                            Padding="16,10"
+                            FontSize="13"
+                            Background="Transparent"
+                            Foreground="#667EEA"
+                            BorderBrush="#667EEA"
+                            BorderThickness="1"
+                            Cursor="Hand"
+                            Click="BtnCreateApiKey_Click"
+                            HorizontalAlignment="Left">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="{TemplateBinding Background}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                        CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#F0F0FF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

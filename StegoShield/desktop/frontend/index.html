@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StegoShield Pro - 登录</title>
+<style>
+:root {
+    --primary: #667eea;
+    --primary-dark: #5568d3;
+    --success: #34c759;
+    --error: #ff3b30;
+    --warning: #ff9500;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --text-muted: #999;
+    --border: #e0e0e0;
+    --card-bg: #ffffff;
+    --page-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --shadow: 0 8px 32px rgba(0,0,0,0.15);
+    --radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --card-bg: #2a2a3e;
+        --text-primary: #fff;
+        --text-secondary: #b0b0b0;
+        --text-muted: #888;
+        --border: #3a3a4e;
+        --page-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%);
+    }
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--page-bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-wrapper {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 40px;
+    width: 100%;
+    max-width: 380px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.brand { text-align: center; margin-bottom: 32px; }
+
+.brand-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--primary);
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 16px rgba(102,126,234,0.3);
+}
+
+.brand h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.brand p {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.form-group { margin-bottom: 20px; }
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    padding-left: 44px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(102,126,234,0.1);
+}
+
+.form-input::placeholder { color: var(--text-muted); }
+
+.input-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.password-toggle:hover { color: var(--primary); }
+
+.options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.remember-me input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+}
+
+.forgot-link {
+    font-size: 14px;
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.forgot-link:hover { text-decoration: underline; }
+
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+}
+
+.btn-primary:active { transform: translateY(0); }
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-primary .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin { to { transform: rotate(360deg); }
+
+.btn-secondary {
+    width: 100%;
+    padding: 16px;
+    background: transparent;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    color: var(--primary);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover { background: rgba(102,126,234,0.05); }
+
+.toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 1000;
+    animation: toastIn 0.3s ease;
+}
+
+.toast.error { background: var(--error); }
+.toast.success { background: var(--success); }
+.toast.info { background: var(--primary); }
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.status-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+}
+
+.status-dot.error { background: var(--error); }
+.status-dot.warning { background: var(--warning); }
+
+@media (max-width: 480px) {
+    .login-wrapper { padding: 32px 24px; }
+    .brand-icon { width: 56px; height: 56px; font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <h1>StegoShield</h1>
+        <p>专业级图片隐写工具</p>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+            <label class="form-label">用户名</label>
+            <div class="input-wrapper">
+                <input type="text" id="username" class="form-input" placeholder="请输入用户名" autocomplete="username" required>
+                <span class="input-icon">👤</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">密码</label>
+            <div class="input-wrapper">
+                <input type="password" id="password" class="form-input" placeholder="请输入密码" autocomplete="current-password" required>
+                <button type="button" class="password-toggle" onclick="togglePassword()">👁</button>
+            </div>
+        </div>
+
+        <div class="options-row">
+            <label class="remember-me">
+                <input type="checkbox" id="rememberMe">
+                <span>记住我</span>
+            </label>
+            <a href="#" class="forgot-link">忘记密码？</a>
+        </div>
+
+        <button type="submit" class="btn-primary" id="loginBtn">登 录</button>
+    </form>
+
+    <div style="text-align: center; margin: 24px 0; color: var(--text-muted); font-size: 14px;">
+        还没有账号？<a href="#" onclick="showRegister()" style="color: var(--primary); text-decoration: none;">立即注册</a>
+    </div>
+</div>
+
+<div id="registerForm" class="login-wrapper" style="display: none;">
+    <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <h1>创建账号</h1>
+        <p>加入 StegoShield</p>
+    </div>
+
+    <form onsubmit="handleRegister(event)">
+        <div class="form-group">
+            <label class="form-label">用户名</label>
+            <div class="input-wrapper">
+                <input type="text" id="regUsername" class="form-input" placeholder="请输入用户名" autocomplete="username" required>
+                <span class="input-icon">👤</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">邮箱</label>
+            <div class="input-wrapper">
+                <input type="email" id="regEmail" class="form-input" placeholder="请输入邮箱" autocomplete="email" required>
+                <span class="input-icon">✉️</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">密码</label>
+            <div class="input-wrapper">
+                <input type="password" id="regPassword" class="form-input" placeholder="请输入密码（6位以上）" autocomplete="new-password" required>
+                <button type="button" class="password-toggle" onclick="toggleRegPassword()">👁</button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary">注 册</button>
+
+        <div style="text-align: center; margin-top: 24px; color: var(--text-muted);">
+            已有账号？<a href="#" onclick="showLogin()" style="color: var(--primary); text-decoration: none;">返回登录</a>
+        </div>
+    </form>
+</div>
+
+<div id="toast" class="toast" style="display: none;"></div>
+
+<div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">检测服务器...</span>
+</div>
+
+<script>
+const API = window.location.origin + '/api';
+let passwordVisible = false;
+
+function togglePassword() {
+    const input = document.getElementById('password';
+    const btn = document.querySelector('#password + .password-toggle');
+    passwordVisible = !passwordVisible;
+    input.type = passwordVisible ? 'text' : 'password';
+    btn.textContent = passwordVisible ? '🙈' : '👁';
+}
+
+function toggleRegPassword() {
+    const input = document.getElementById('regPassword');
+    const btn = document.querySelector('#regPassword + .password-toggle');
+    input.type = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+}
+
+function showRegister() {
+    document.getElementById('loginForm').closest('.login-wrapper').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+    document.getElementById('regUsername').focus();
+}
+
+function showLogin() {
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loginForm').closest('.login-wrapper').style.display = 'block';
+    document.getElementById('username').focus();
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast ' + type;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+function updateStatus(message, type = 'success') {
+    const dot = document.getElementById('statusDot');
+    dot.className = 'status-dot ' + type;
+    document.getElementById('statusText').textContent = message;
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+    
+    if (!username || !password) {
+        showToast('请输入用户名和密码', 'error');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>登录中...';
+    
+    try {
+        const response = await fetch(API + '/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password})
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            if (document.getElementById('rememberMe').checked) {
+                localStorage.setItem('user', JSON.stringify(result.data));
+            }
+            showToast('登录成功！', 'success');
+            setTimeout(() => { location.href = '/simple.html'; }, 1000);
+        } else {
+            showToast(result.message || '登录失败', 'error');
+            btn.disabled = false;
+            btn.textContent = '登 录';
+        }
+    } catch (error) {
+        showToast('网络错误，请检查服务器', 'error');
+        btn.disabled = false;
+        btn.textContent = '登 录';
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    
+    if (!username || !email || !password || password.length < 6) {
+        showToast('请填写所有信息', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(API + '/auth/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, email, password})
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('注册成功，请登录', 'success');
+            showLogin();
+        } else {
+            showToast(result.message || '注册失败', 'error');
+        }
+    } catch (error) {
+        showToast('注册失败，请检查服务器', 'error');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateStatus('检测中...', 'warning');
+    fetch(API + '/auth/login', {method: 'HEAD'})
+        .then(() => {
+            updateStatus('服务器已连接');
+            setTimeout(() => {
+                document.querySelector('.status-bar').style.opacity = '0';
+            }, 2000);
+        })
+        .catch(() => {
+            updateStatus('服务器未连接', 'error');
+        });
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const form = document.querySelector('form:not([style*="display: none"]');
+        if (form) form.dispatchEvent(new Event('submit'));
+    }
+});
+</script>
+</body>
+</html>

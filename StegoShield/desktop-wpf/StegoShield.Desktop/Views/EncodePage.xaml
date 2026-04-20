@@ -1,0 +1,218 @@
+<UserControl x:Class="StegoShield.Desktop.Views.EncodePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="32">
+            <TextBlock Text="📝 图片隐写工具" 
+                       FontSize="24" 
+                       FontWeight="Bold" 
+                       Foreground="#1A1A2E"
+                       Margin="0,0,0,24"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="300"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                    <TextBlock Text="1. 选择图片" FontSize="14" FontWeight="SemiBold" 
+                               Foreground="#1A1A2E" Margin="0,0,0,8"/>
+
+                    <Border x:Name="imageDropZone" 
+                            Background="#F8F9FA" 
+                            BorderBrush="#DEE2E6" 
+                            BorderThickness="2" 
+                            CornerRadius="8" 
+                            Height="250"
+                            AllowDrop="True"
+                            DragEnter="ImageDropZone_DragEnter"
+                            DragLeave="ImageDropZone_DragLeave"
+                            Drop="ImageDropZone_Drop"
+                            MouseLeftButtonUp="ImageDropZone_Click"
+                            Cursor="Hand">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="BorderBrush" Value="#667EEA"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="🖼️" FontSize="48" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="txtDropHint" Text="点击选择图片或拖放图片到这里"
+                                       FontSize="13" Foreground="#6C757D"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,8,0,0"/>
+                            <TextBlock x:Name="txtImagePath" Text="" FontSize="11" 
+                                       Foreground="#ADB5BD" HorizontalAlignment="Center"
+                                       Margin="0,4,0,0"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="400"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="2. 选择算法" FontSize="14" FontWeight="SemiBold" 
+                               Foreground="#1A1A2E" Margin="0,24,0,8"/>
+
+                    <ComboBox x:Name="cmbAlgorithm" 
+                              FontSize="12" 
+                              Padding="12,10"
+                              SelectionChanged="CmbAlgorithm_SelectionChanged">
+                        <ComboBoxItem Content="LSB (PNG 推荐)" IsSelected="True"/>
+                        <ComboBoxItem Content="DCT (JPEG 支持) - VIP"/>
+                    </ComboBox>
+
+                    <TextBlock x:Name="txtAlgorithmInfo" 
+                               Text="最基础的隐写算法，将数据嵌入到图片像素的最低位"
+                               FontSize="11" 
+                               Foreground="#6C757D"
+                               Margin="0,8,0,0"
+                               TextWrapping="Wrap"/>
+
+                    <TextBlock Text="3. 输入要隐藏的数据" FontSize="14" FontWeight="SemiBold" 
+                               Foreground="#1A1A2E" Margin="0,24,0,8"/>
+
+                    <TabControl x:Name="dataTabControl" Height="160" BorderBrush="#DEE2E6">
+                        <TabItem Header="文本数据">
+                            <TextBox x:Name="txtData" 
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     FontSize="12"
+                                     Padding="12"
+                                     BorderThickness="0"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </TabItem>
+                        <TabItem Header="文件数据">
+                            <StackPanel Margin="8">
+                                <Border Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" 
+                                        CornerRadius="6" Padding="16" Cursor="Hand"
+                                        MouseLeftButtonUp="FileDropZone_Click">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="📁" FontSize="32" HorizontalAlignment="Center"/>
+                                        <TextBlock x:Name="txtFileHint" Text="点击选择文件或拖放文件到这里"
+                                                   FontSize="12" Foreground="#6C757D" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                                        <TextBlock x:Name="txtFileName" Text="" FontSize="11" 
+                                                   Foreground="#667EEA" HorizontalAlignment="Center" Margin="0,4,0,0"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock x:Name="txtFileSize" Text="" FontSize="10" 
+                                                   Foreground="#ADB5BD" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </TabItem>
+                    </TabControl>
+
+                    <TextBlock Text="4. 高级选项" FontSize="14" FontWeight="SemiBold" 
+                               Foreground="#1A1A2E" Margin="0,24,0,8"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="启用加密" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <CheckBox x:Name="chkEncrypt" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16" x:Name="pnlEncryptionKey" Visibility="Collapsed">
+                        <TextBlock Text="加密密钥" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox x:Name="txtEncryptionKey" Width="200" FontSize="12" Padding="8,6"/>
+                        <Button Content="生成密钥" Click="BtnGenerateKey_Click" Margin="8,0,0,0" Padding="12,6"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <TextBlock Text="抗压缩（冗余编码）" FontSize="12" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <CheckBox x:Name="chkCompress" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Text="5. 输出设置" FontSize="14" FontWeight="SemiBold" 
+                               Foreground="#1A1A2E" Margin="0,0,0,8"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="txtOutputPath" 
+                                 Grid.Column="0"
+                                 FontSize="12"
+                                 Padding="12,10"
+                                 IsReadOnly="True"
+                                 BorderBrush="#DEE2E6"/>
+                        <Button x:Name="btnBrowse" 
+                                Grid.Column="1"
+                                Content="浏览"
+                                Margin="8,0,0,0"
+                                Padding="16,10"
+                                Background="#667EEA"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Click="BtnBrowse_Click"/>
+                    </Grid>
+
+                    <Button x:Name="btnEncode" 
+                            Content="🔒 开始隐写"
+                            Margin="0,32,0,0"
+                            Padding="24,14"
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Background="#667EEA"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            HorizontalAlignment="Stretch"
+                            Click="BtnEncode_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="border" Background="{TemplateBinding Background}"
+                                        CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="border" Property="Background" Value="#5568D3"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter TargetName="border" Property="Opacity" Value="0.6"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <ProgressBar x:Name="progressBar" 
+                                 Height="4" 
+                                 Margin="0,16,0,0"
+                                 Visibility="Collapsed"
+                                 Foreground="#667EEA"
+                                 Background="#E9ECEF"/>
+
+                    <TextBlock x:Name="txtResult" 
+                               Margin="0,16,0,0"
+                               FontSize="12"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <Border Grid.Column="1" Background="#F8F9FA" CornerRadius="8" Padding="16">
+                    <StackPanel>
+                        <TextBlock Text="💡 使用提示" FontSize="14" FontWeight="SemiBold" 
+                                   Foreground="#1A1A2E" Margin="0,0,0,12"/>
+
+                        <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="#6C757D">
+                            <Run FontWeight="SemiBold">支持的格式：</Run><LineBreak/>
+                            <Run>PNG、BMP、TIFF</Run><LineBreak/><LineBreak/>
+                            <Run FontWeight="SemiBold">推荐PNG格式：</Run><LineBreak/>
+                            <Run>PNG是无损压缩格式，隐写效果最好</Run><LineBreak/><LineBreak/>
+                            <Run FontWeight="SemiBold">数据容量：</Run><LineBreak/>
+                            <Run>容量取决于图片大小，大约每像素可藏1-3位数据</Run><LineBreak/><LineBreak/>
+                            <Run FontWeight="SemiBold">VIP特权：</Run><LineBreak/>
+                            <Run Foreground="#667EEA">升级VIP解锁F5、JSteg等高级算法，支持更大容量</Run>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
